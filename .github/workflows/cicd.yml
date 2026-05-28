@@ -16,7 +16,7 @@ jobs:
       CLUSTER_NAME: tama-api-cluster
       DEPLOYMENT_NAME: member-service
       CONTAINER_NAME: member
-      eks_NAMESPACE: default
+      K8S_NAMESPACE: default
 
     steps:
       - name: Checkout
@@ -49,33 +49,33 @@ jobs:
         uses: tj-actions/changed-files@v44
 
       - name: Deploy order
-        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/order/')
-        run: kubectl apply -f eks/order/
+        if: contains(steps.changed-files.outputs.all_changed_files, 'order/')
+        run: kubectl apply -f order/
 
       - name: Deploy item
-        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/item/')
-        run: kubectl apply -f eks/item/
+        if: contains(steps.changed-files.outputs.all_changed_files, 'item/')
+        run: kubectl apply -f item/
 
       - name: Deploy member
-        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/member/')
-        run: kubectl apply -f eks/member/
+        if: contains(steps.changed-files.outputs.all_changed_files, 'member/')
+        run: kubectl apply -f member/
 
       - name: Deploy common
-        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/common/')
-        run: kubectl apply -f eks/common/
+        if: contains(steps.changed-files.outputs.all_changed_files, 'common/')
+        run: kubectl apply -f common/
 
       - name: Deploy nginx
-        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/nginx/')
-        run: kubectl apply -f eks/nginx/
+        if: contains(steps.changed-files.outputs.all_changed_files, 'nginx/')
+        run: kubectl apply -f nginx/
 
       - name: Deploy zipkin
-        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/zipkin/')
-        run: kubectl apply -f eks/zipkin/
+        if: contains(steps.changed-files.outputs.all_changed_files, 'zipkin/')
+        run: kubectl apply -f zipkin/
 
       - name: Deploy elastic-search
-        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/elastic-search/')
-        run: kubectl apply -f eks/elastic-search/
+        if: contains(steps.changed-files.outputs.all_changed_files, 'elastic-search/')
+        run: kubectl apply -f elastic-search/
 
       - name: Deploy fluent-bit
-        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/fluent-bit/')
-        run: kubectl apply -f eks/fluent-bit/
+        if: contains(steps.changed-files.outputs.all_changed_files, 'fluent-bit/')
+        run: kubectl apply -f fluent-bit/
