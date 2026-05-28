@@ -65,7 +65,13 @@ jobs:
 
       - name: Deploy zipkin
         if: contains(steps.changed-files.outputs.all_changed_files, 'zipkin/')
-        run: kubectl apply -f zipkin/
+        run: |
+          kubectl create secret generic opensearch-secret \
+            --from-literal=username="${{ secrets.OPENSEARCH_USER }}" \
+            --from-literal=password="${{ secrets.OPENSEARCH_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl apply -f zipkin/
 
       - name: Deploy fluent-bit
         if: contains(steps.changed-files.outputs.all_changed_files, 'fluent-bit/')
