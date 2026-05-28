@@ -87,10 +87,11 @@ data:
     [OUTPUT]
         Name                es
         Match               *
-        Host                elasticsearch
-        Port                9200
-        HTTP_User           elastic
-        HTTP_Passwd         S77RMGFWQo2geB1O
+        Host                search-tama-search-l2pzlt5ldkyp2g737dcvpyectm.ap-northeast-2.es.amazonaws.com
+        Port                443
+        TLS                 On
+        HTTP_User           ${OPENSEARCH_USER}
+        HTTP_Passwd         ${OPENSEARCH_PASSWORD}
         Logstash_Format     On
         Logstash_Prefix     fluent-bit
         Replace_Dots        On
@@ -134,6 +135,19 @@ spec:
         - name: fluent-bit
           image: fluent/fluent-bit:3.0
           imagePullPolicy: Always
+
+          env:
+            - name: OPENSEARCH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: opensearch-secret
+                  key: username
+
+            - name: OPENSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: opensearch-secret
+                  key: password
 
           ports:
             - containerPort: 2020

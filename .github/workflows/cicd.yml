@@ -11,12 +11,7 @@ jobs:
 
     env:
       AWS_REGION: ap-northeast-2
-      ECR_REGISTRY: 277707114689.dkr.ecr.ap-northeast-2.amazonaws.com
-      IMAGE_NAME: tama-api/member
       CLUSTER_NAME: tama-api-cluster
-      DEPLOYMENT_NAME: member-service
-      CONTAINER_NAME: member
-      K8S_NAMESPACE: default
 
     steps:
       - name: Checkout
@@ -72,10 +67,12 @@ jobs:
         if: contains(steps.changed-files.outputs.all_changed_files, 'zipkin/')
         run: kubectl apply -f zipkin/
 
-      - name: Deploy elastic-search
-        if: contains(steps.changed-files.outputs.all_changed_files, 'elastic-search/')
-        run: kubectl apply -f elastic-search/
-
       - name: Deploy fluent-bit
         if: contains(steps.changed-files.outputs.all_changed_files, 'fluent-bit/')
-        run: kubectl apply -f fluent-bit/
+        run: |
+          kubectl create secret generic opensearch-secret \
+            --from-literal=username="${{ secrets.OPENSEARCH_USER }}" \
+            --from-literal=password="${{ secrets.OPENSEARCH_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl apply -f fluent-bit/
