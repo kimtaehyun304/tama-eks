@@ -1,0 +1,81 @@
+name: CICD
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ap-northeast-2
+      ECR_REGISTRY: 277707114689.dkr.ecr.ap-northeast-2.amazonaws.com
+      IMAGE_NAME: tama-api/member
+      CLUSTER_NAME: tama-api-cluster
+      DEPLOYMENT_NAME: member-service
+      CONTAINER_NAME: member
+      eks_NAMESPACE: default
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: 17
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl (use aws eks update-kubeconfig)
+        run: |
+          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Detect changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+
+      - name: Deploy order
+        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/order/')
+        run: kubectl apply -f eks/order/
+
+      - name: Deploy item
+        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/item/')
+        run: kubectl apply -f eks/item/
+
+      - name: Deploy member
+        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/member/')
+        run: kubectl apply -f eks/member/
+
+      - name: Deploy common
+        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/common/')
+        run: kubectl apply -f eks/common/
+
+      - name: Deploy nginx
+        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/nginx/')
+        run: kubectl apply -f eks/nginx/
+
+      - name: Deploy zipkin
+        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/zipkin/')
+        run: kubectl apply -f eks/zipkin/
+
+      - name: Deploy elastic-search
+        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/elastic-search/')
+        run: kubectl apply -f eks/elastic-search/
+
+      - name: Deploy fluent-bit
+        if: contains(steps.changed-files.outputs.all_changed_files, 'eks/fluent-bit/')
+        run: kubectl apply -f eks/fluent-bit/
